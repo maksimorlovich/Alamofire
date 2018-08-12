@@ -24,4 +24,4 @@
 
 import PackageDescription
 
-let package = Package(name: "Alamofire", dependencies : [], exclude: ["Tests"])
+let package = Package(name: "Alamofire", dependencies : [.Package(url: "https://github.com/maksimorlovich/CBSD", majorVersion: 1)], swiftLanguageVersions: [3, 4], exclude: ["Tests"])

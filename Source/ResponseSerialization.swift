@@ -22,6 +22,7 @@
 //  THE SOFTWARE.
 //
 
+import CoreFoundation
 import Foundation
 
 // MARK: Protocols
@@ -367,12 +368,14 @@ public final class StringResponseSerializer: ResponseSerializer {
         }
 
         var convertedEncoding = encoding
-
+    #if !os(Linux)
+        // LINUXTODO: Need custom implementation here
         if let encodingName = response?.textEncodingName as CFString?, convertedEncoding == nil {
             let ianaCharSet = CFStringConvertIANACharSetNameToEncoding(encodingName)
             let nsStringEncoding = CFStringConvertEncodingToNSStringEncoding(ianaCharSet)
             convertedEncoding = String.Encoding(rawValue: nsStringEncoding)
         }
+    #endif
 
         let actualEncoding = convertedEncoding ?? .isoLatin1
 

@@ -50,8 +50,11 @@ open class SessionManager {
                 eventMonitors: [EventMonitor] = []) {
         precondition(session.delegate === delegate,
                      "URLSession SessionManager initializer must pass the SessionDelegate that has been assigned to the URLSession as its delegate.")
+    #if !os(Linux)
+        //LINUXTODO: For some reason, this check fails on Linux
         precondition(session.delegateQueue.underlyingQueue === rootQueue,
                      "URLSession SessionManager intializer must pass the DispatchQueue used as the delegateQueue's underlyingQueue as the rootQueue.")
+    #endif
 
         self.session = session
         self.delegate = delegate
@@ -88,7 +91,10 @@ open class SessionManager {
     }
 
     deinit {
+    #if !os(Linux)
+        // LINUXTODO: URLSession.invalidateAndCancel is not implemented as of Swift 4.2
         session.invalidateAndCancel()
+    #endif
     }
 
     // MARK: - Request

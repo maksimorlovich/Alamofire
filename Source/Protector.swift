@@ -28,14 +28,31 @@ import Foundation
 
 /// An `os_unfair_lock` wrapper.
 final class UnfairLock {
+#if os(Linux)
+    // LINUXTODO: There is no os_unfair_lock() on Linux, so just use pthread mutex
+    private var pthreadLock: pthread_mutex_t = {
+        var mutex = pthread_mutex_t()
+        pthread_mutex_init(&mutex, nil)
+        return mutex
+    } ()
+#else
     private var unfairLock = os_unfair_lock()
+#endif
 
     fileprivate func lock() {
+    #if os(Linux)
+        pthread_mutex_lock(&pthreadLock)
+    #else
         os_unfair_lock_lock(&unfairLock)
+    #endif
     }
 
     fileprivate func unlock() {
+    #if os(Linux)
+        pthread_mutex_unlock(&pthreadLock)
+    #else
         os_unfair_lock_unlock(&unfairLock)
+    #endif
     }
 
     /// Executes a closure returning a value while acquiring the lock.

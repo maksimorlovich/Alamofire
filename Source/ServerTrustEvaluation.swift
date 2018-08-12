@@ -90,7 +90,7 @@ extension Array where Element == ServerTrustEvaluating {
 }
 
 // MARK: - Server Trust Evaluators
-
+#if !os(Linux)
 /// An evaluator which uses the default server trust evaluation while allowing you to control whether to validate the
 /// host provided by the challenge. Applications are encouraged to always validate the host in production environments
 /// to guarantee the validity of the server's certificate chain.
@@ -353,6 +353,7 @@ public extension Bundle {
     }
 }
 
+// Implement this once Linux has API for evaluating server trusts.
 public extension SecTrust {
     /// Evaluates `self` and returns `true` if the evaluation succeeds with a value of `.unspecified` or `.proceed`.
     var isValid: Bool {
@@ -396,3 +397,4 @@ public extension SecCertificate {
         return SecTrustCopyPublicKey(createdTrust)
     }
 }
+#endif

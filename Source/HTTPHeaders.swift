@@ -60,10 +60,17 @@ extension Dictionary where Key == String, Value == String {
         // Example: `iOS Example/1.0 (org.alamofire.iOS-Example; build:1; iOS 10.0.0) Alamofire/4.0.0`
         let userAgent: String = {
             if let info = Bundle.main.infoDictionary {
+            #if os(Linux)
+                let executable = "Unknown"
+                let bundle = "Unknown"
+                let appVersion = "Unknown"
+                let appBuild = "Unknown"
+            #else
                 let executable = info[kCFBundleExecutableKey as String] as? String ?? "Unknown"
                 let bundle = info[kCFBundleIdentifierKey as String] as? String ?? "Unknown"
                 let appVersion = info["CFBundleShortVersionString"] as? String ?? "Unknown"
                 let appBuild = info[kCFBundleVersionKey as String] as? String ?? "Unknown"
+            #endif
 
                 let osNameVersion: String = {
                     let version = ProcessInfo.processInfo.operatingSystemVersion
@@ -88,6 +95,10 @@ extension Dictionary where Key == String, Value == String {
                     return "\(osName) \(versionString)"
                 }()
 
+            #if os(Linux)
+                // LINUXTODO: Bundle(for aClass: AnyClass) is unimplemented as of Swift 4.2
+                let alamofireVersion: String = "Alamofire/Unknown"
+            #else
                 let alamofireVersion: String = {
                     guard
                         let afInfo = Bundle(for: SessionManager.self).infoDictionary,
@@ -96,6 +107,7 @@ extension Dictionary where Key == String, Value == String {
 
                     return "Alamofire/\(build)"
                 }()
+            #endif
 
                 return "\(executable)/\(appVersion) (\(bundle); build:\(appBuild); \(osNameVersion)) \(alamofireVersion)"
             }

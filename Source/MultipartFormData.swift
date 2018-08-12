@@ -28,6 +28,9 @@ import Foundation
 import MobileCoreServices
 #elseif os(macOS)
 import CoreServices
+#elseif os(Linux)
+// Need libbsd for arc4random()
+import CBSD
 #endif
 
 /// Constructs `multipart/form-data` for uploads within an HTTP or HTTPS body. There are currently two ways to encode
@@ -240,7 +243,8 @@ open class MultipartFormData {
         //============================================================
         //              Check 2 - is file URL reachable?
         //============================================================
-
+    #if !os(Linux)
+        // LINUXTODO: URL.checkPromisedItemIsReachable() is not implemented as of Swift 4.2
         do {
             let isReachable = try fileURL.checkPromisedItemIsReachable()
             guard isReachable else {
@@ -251,7 +255,7 @@ open class MultipartFormData {
             setBodyPartError(withReason: .bodyPartFileNotReachableWithError(atURL: fileURL, error: error))
             return
         }
-
+    #endif
         //============================================================
         //            Check 3 - is file URL a directory?
         //============================================================
@@ -537,12 +541,15 @@ open class MultipartFormData {
     // MARK: - Private - Mime Type
 
     private func mimeType(forPathExtension pathExtension: String) -> String {
+    #if !os(Linux)
+        // LINUXTODO: This is not implemented as of Swift 4.2
         if
             let id = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, pathExtension as CFString, nil)?.takeRetainedValue(),
             let contentType = UTTypeCopyPreferredTagWithClass(id, kUTTagClassMIMEType)?.takeRetainedValue()
         {
             return contentType as String
         }
+    #endif
 
         return "application/octet-stream"
     }
