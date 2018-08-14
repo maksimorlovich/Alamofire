@@ -28,9 +28,6 @@ import Foundation
 import MobileCoreServices
 #elseif os(macOS)
 import CoreServices
-#elseif os(Linux)
-// Need libbsd for arc4random()
-import CBSD
 #endif
 
 /// Constructs `multipart/form-data` for uploads within an HTTP or HTTPS body. There are currently two ways to encode
@@ -58,8 +55,30 @@ open class MultipartFormData {
             case initial, encapsulated, final
         }
 
+    #if os(Linux) && !swift(>=4.2)
+        private static let randomizer: () = {
+            // Remember to seed Glibc's random number generator
+            srandom(UInt32(time(nil)))
+        }()
+    #endif
+
         static func randomBoundary() -> String {
-            return String(format: "alamofire.boundary.%08x%08x", arc4random(), arc4random())
+        #if swift(>=4.2)
+            // Swift 4.2 introduced a unified & cross-platform way to generate random numbers
+            // https://github.com/apple/swift-evolution/blob/master/proposals/0202-random-unification.md
+            let random1 = UInt32.random(in: .min ... .max)
+            let random2 = UInt32.random(in: .min ... .max)
+        #elseif os(Linux)
+            // LINUXTODO: Consider implementing Swift 4.2 approach as documented here:
+            //            https://github.com/apple/swift/pull/12772
+            let _ = BoundaryGenerator.randomizer
+            let random1 = UInt32(random())
+            let random2 = UInt32(random())
+        #else
+            let random1 = arc4random()
+            let random2 = arc4random()
+        #endif
+            return String(format: "alamofire.boundary.%08x%08x", random1, random2)
         }
 
         static func boundaryData(forBoundaryType boundaryType: BoundaryType, boundary: String) -> Data {
