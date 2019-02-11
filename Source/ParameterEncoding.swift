@@ -178,7 +178,8 @@ public struct URLEncoding: ParameterEncoding {
         guard let parameters = parameters else { return urlRequest }
 
         if let method = HTTPMethod(rawValue: urlRequest.httpMethod ?? "GET"), encodesParametersInURL(with: method) {
-            guard let url = urlRequest.url else {
+            // Work-a-round for Linux Swift bug https://bugs.swift.org/browse/SR-9900
+            guard let url = urlRequest.url?.absoluteURL else {
                 throw AFError.parameterEncodingFailed(reason: .missingURL)
             }
 
