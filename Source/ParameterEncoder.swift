@@ -484,6 +484,16 @@ struct AnyCodingKey: CodingKey, Hashable {
             self.init(stringValue: base.stringValue)!
         }
     }
+
+    #if !swift(>=4.2)
+    public var hashValue: Int {
+        if let intValue = intValue {
+            return intValue
+        } else {
+            return stringValue.hashValue
+        }
+    }
+    #endif
 }
 
 extension _URLEncodedFormEncoder {

@@ -1,6 +1,6 @@
-// swift-tools-version:3.0
+// swift-tools-version:4.1
 //
-//  Package@swift-3.swift
+//  Package.swift
 //
 //  Copyright (c) 2014-2018 Alamofire Software Foundation (http://alamofire.org/)
 //
@@ -25,6 +25,17 @@
 
 import PackageDescription
 
-#if !os(Linux)
-let package = Package(name: "Alamofire", dependencies : [], exclude: ["Tests"])
-#endif
+let package = Package(
+    name: "Alamofire",
+    products: [
+        .library(
+            name: "Alamofire",
+            targets: ["Alamofire"])
+    ],
+    targets: [
+        .target(
+            name: "Alamofire",
+            path: "Source")
+    ]
+   // swiftLanguageVersions: [3, 4]
+)

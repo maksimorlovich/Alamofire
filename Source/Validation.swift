@@ -187,7 +187,11 @@ extension DataRequest {
         let contentTypes: () -> [String] = { [unowned self] in
             return self.acceptableContentTypes
         }
+        #if swift(>=4.2)
         return validate(statusCode: acceptableStatusCodes).validate(contentType: contentTypes())
+        #else
+        return validate(statusCode: Array(CountableRange(acceptableStatusCodes))).validate(contentType: contentTypes())
+        #endif
     }
 }
 
@@ -250,6 +254,10 @@ extension DownloadRequest {
         let contentTypes = { [unowned self] in
             return self.acceptableContentTypes
         }
+        #if swift(>=4.2)
         return validate(statusCode: acceptableStatusCodes).validate(contentType: contentTypes())
+        #else
+        return validate(statusCode: Array(CountableRange(acceptableStatusCodes))).validate(contentType: contentTypes())
+        #endif
     }
 }

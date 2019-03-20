@@ -307,7 +307,14 @@ extension Array where Element == HTTPHeader {
     /// Case-insensitively finds the index of an `HTTPHeader` with the provided name, if it exists.
     func index(of name: String) -> Int? {
         let lowercasedName = name.lowercased()
+        #if swift(>=4.2)
         return firstIndex { $0.name.lowercased() == lowercasedName }
+        #else
+        for i in 0..<count {
+            if self[i].name.lowercased() == lowercasedName { return i }
+        }
+        return nil
+        #endif
     }
 }
 

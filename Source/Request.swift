@@ -546,9 +546,15 @@ extension Request: Equatable {
 }
 
 extension Request: Hashable {
+    #if swift(>=4.2)
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
+    #else
+    public var hashValue: Int {
+        return id.hashValue
+    }
+    #endif
 }
 
 extension Request: CustomStringConvertible {

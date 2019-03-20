@@ -25,6 +25,7 @@
 
 import PackageDescription
 
+#if !os(Linux)
 let package = Package(
     name: "Alamofire",
     products: [
@@ -39,3 +40,4 @@ let package = Package(
     ],
     swiftLanguageVersions: [3, 4]
 )
+#endif
