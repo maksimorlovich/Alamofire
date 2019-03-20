@@ -141,6 +141,7 @@ public enum AFError: Error {
         case invalidEmptyResponse(type: String)
     }
 
+    #if !os(Linux)
     /// Underlying reason a server trust evaluation error occured.
     public enum ServerTrustFailureReason {
         /// The output of a server trust evaluation.
@@ -184,6 +185,7 @@ public enum AFError: Error {
         /// Public key pinning failed.
         case publicKeyPinningFailed(host: String, trust: SecTrust, pinnedKeys: [SecKey], serverKeys: [SecKey])
     }
+    #endif
 
     case sessionDeinitialized
     case sessionInvalidated(error: Error?)
@@ -195,7 +197,9 @@ public enum AFError: Error {
     case requestAdaptationFailed(error: Error)
     case responseValidationFailed(reason: ResponseValidationFailureReason)
     case responseSerializationFailed(reason: ResponseSerializationFailureReason)
+    #if !os(Linux)
     case serverTrustEvaluationFailed(reason: ServerTrustFailureReason)
+    #endif
     case requestRetryFailed(retryError: Error, originalError: Error)
 }
 
@@ -276,10 +280,12 @@ extension AFError {
     }
 
     /// Returns whether the instance is `.serverTrustEvaluationFailed`.
+    #if !os(Linux)
     public var isServerTrustEvaluationError: Bool {
         if case .serverTrustEvaluationFailed = self { return true }
         return false
     }
+    #endif
 
     /// Returns whether the instance is `requestRetryFailed`. When `true`, the `underlyingError` property will
     /// contain the associated value.
@@ -473,6 +479,7 @@ extension AFError.ResponseSerializationFailureReason {
     }
 }
 
+#if !os(Linux)
 extension AFError.ServerTrustFailureReason {
     var output: AFError.ServerTrustFailureReason.Output? {
         switch self {
@@ -484,6 +491,7 @@ extension AFError.ServerTrustFailureReason {
         }
     }
 }
+#endif
 
 // MARK: - Error Descriptions
 
@@ -513,8 +521,10 @@ extension AFError: LocalizedError {
             return reason.localizedDescription
         case .responseSerializationFailed(let reason):
             return reason.localizedDescription
+        #if !os(Linux)
         case .serverTrustEvaluationFailed:
             return "Server trust evaluation failed."
+        #endif
         case .requestRetryFailed(let retryError, let originalError):
             return """
                    Request retry failed with retry error: \(retryError.localizedDescription), \
@@ -629,6 +639,7 @@ extension AFError.ResponseValidationFailureReason {
     }
 }
 
+#if !os(Linux)
 extension AFError.ServerTrustFailureReason {
     var localizedDescription: String {
         switch self {
@@ -657,3 +668,4 @@ extension AFError.ServerTrustFailureReason {
         }
     }
 }
+#endif

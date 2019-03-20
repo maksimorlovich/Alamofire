@@ -33,8 +33,11 @@ extension OperationQueue {
         self.init()
         self.qualityOfService = qualityOfService
         self.maxConcurrentOperationCount = maxConcurrentOperationCount
-        self.underlyingQueue = underlyingQueue
+        // LINUXTODO: As of Swift 4.2 setting OperationQueue.name sets
+        //            OperationQueue.underlyingQueue to nil. This is a bug.
+        //            See: https://bugs.swift.org/browse/SR-8542
         self.name = name
+        self.underlyingQueue = underlyingQueue
         self.isSuspended = startSuspended
     }
 }

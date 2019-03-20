@@ -83,6 +83,10 @@ extension SessionDelegate: URLSessionTaskDelegate {
     }
 
     func attemptServerTrustAuthentication(with challenge: URLAuthenticationChallenge) -> ChallengeEvaluation {
+        #if os(Linux)
+        // LINUXTODO: Can't do this on Linux as of Swift 4.2
+        return (.performDefaultHandling, nil, nil)
+        #else
         let host = challenge.protectionSpace.host
 
         guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
@@ -102,6 +106,7 @@ extension SessionDelegate: URLSessionTaskDelegate {
         } catch {
             return (.cancelAuthenticationChallenge, nil, error)
         }
+        #endif
     }
 
     func attemptHTTPAuthentication(for challenge: URLAuthenticationChallenge,

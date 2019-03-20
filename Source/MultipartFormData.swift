@@ -55,8 +55,30 @@ open class MultipartFormData {
             case initial, encapsulated, final
         }
 
+        #if os(Linux) && !swift(>=4.2)
+        private static let randomizer: () = {
+            // Remember to seed Glibc's random number generator
+            srandom(UInt32(time(nil)))
+        }()
+        #endif
+
         static func randomBoundary() -> String {
-            return String(format: "alamofire.boundary.%08x%08x", arc4random(), arc4random())
+            #if swift(>=4.2)
+            // Swift 4.2 introduced a unified & cross-platform way to generate random numbers
+            // https://github.com/apple/swift-evolution/blob/master/proposals/0202-random-unification.md
+            let random1 = UInt32.random(in: .min ... .max)
+            let random2 = UInt32.random(in: .min ... .max)
+            #elseif os(Linux)
+            // LINUXTODO: Consider implementing Swift 4.2 approach as documented here:
+            //            https://github.com/apple/swift/pull/12772
+            let _ = BoundaryGenerator.randomizer
+            let random1 = UInt32(random())
+            let random2 = UInt32(random())
+            #else
+            let random1 = arc4random()
+            let random2 = arc4random()
+            #endif
+            return String(format: "alamofire.boundary.%08x%08x", random1, random2)
         }
 
         static func boundaryData(forBoundaryType boundaryType: BoundaryType, boundary: String) -> Data {
@@ -241,6 +263,8 @@ open class MultipartFormData {
         //              Check 2 - is file URL reachable?
         //============================================================
 
+        #if !os(Linux)
+        // LINUXTODO: URL.checkPromisedItemIsReachable() is not implemented as of Swift 4.2
         do {
             let isReachable = try fileURL.checkPromisedItemIsReachable()
             guard isReachable else {
@@ -251,6 +275,7 @@ open class MultipartFormData {
             setBodyPartError(withReason: .bodyPartFileNotReachableWithError(atURL: fileURL, error: error))
             return
         }
+        #endif
 
         //============================================================
         //            Check 3 - is file URL a directory?
@@ -534,12 +559,15 @@ open class MultipartFormData {
     // MARK: - Private - Mime Type
 
     private func mimeType(forPathExtension pathExtension: String) -> String {
+        #if !os(Linux)
+        // LINUXTODO: This is not implemented as of Swift 4.2
         if
             let id = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, pathExtension as CFString, nil)?.takeRetainedValue(),
             let contentType = UTTypeCopyPreferredTagWithClass(id, kUTTagClassMIMEType)?.takeRetainedValue()
         {
             return contentType as String
         }
+        #endif
 
         return "application/octet-stream"
     }

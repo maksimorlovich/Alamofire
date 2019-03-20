@@ -57,6 +57,7 @@ open class ServerTrustManager {
     /// - Returns:        The `ServerTrustEvaluating` value for the given host if found, `nil` otherwise.
     /// - Throws: `AFError.serverTrustEvaluationFailed` if `allHostsMustBeEvaluated` is `true` and no matching
     ///           evaluators are found.
+    #if !os(Linux)
     open func serverTrustEvaluator(forHost host: String) throws -> ServerTrustEvaluating? {
         guard let evaluator = evaluators[host] else {
             if allHostsMustBeEvaluated {
@@ -68,6 +69,7 @@ open class ServerTrustManager {
 
         return evaluator
     }
+    #endif
 }
 
 /// A protocol describing the API used to evaluate server trusts.
@@ -104,7 +106,7 @@ extension Array where Element == ServerTrustEvaluating {
 }
 
 // MARK: - Server Trust Evaluators
-
+#if !os(Linux)
 /// An evaluator which uses the default server trust evaluation while allowing you to control whether to validate the
 /// host provided by the challenge. Applications are encouraged to always validate the host in production environments
 /// to guarantee the validity of the server's certificate chain.
@@ -378,6 +380,7 @@ extension Bundle {
     }
 }
 
+// Implement this once Linux has API for evaluating server trusts.
 public extension SecTrust {
     func validate(policy: SecPolicy, errorProducer: (_ status: OSStatus, _ result: SecTrustResultType) -> Error) throws {
         try apply(policy: policy).validate(errorProducer: errorProducer)
@@ -497,3 +500,4 @@ extension SecTrustResultType {
         return (self == .unspecified || self == .proceed)
     }
 }
+#endif
