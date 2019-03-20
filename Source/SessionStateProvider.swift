@@ -35,7 +35,7 @@ public protocol SessionStateProvider: AnyObject {
     func cancelRequestsForSessionInvalidation(with error: Error?)
 }
 
-open class SessionDelegate: NSObject {
+open class SessionDelegate: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionDataDelegate, URLSessionDownloadDelegate {
     private let fileManager: FileManager
 
     weak var stateProvider: SessionStateProvider?
@@ -44,17 +44,17 @@ open class SessionDelegate: NSObject {
     public init(fileManager: FileManager = .default) {
         self.fileManager = fileManager
     }
-}
 
-extension SessionDelegate: URLSessionDelegate {
+    // MARK: - URLSessionDelegate
+
     open func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
         eventMonitor?.urlSession(session, didBecomeInvalidWithError: error)
 
         stateProvider?.cancelRequestsForSessionInvalidation(with: error)
     }
-}
 
-extension SessionDelegate: URLSessionTaskDelegate {
+    // MARK: - URLSessionTaskDelegate
+
     /// Result of a `URLAuthenticationChallenge` evaluation.
     typealias ChallengeEvaluation = (disposition: URLSession.AuthChallengeDisposition, credential: URLCredential?, error: Error?)
 
@@ -181,9 +181,9 @@ extension SessionDelegate: URLSessionTaskDelegate {
     open func urlSession(_ session: URLSession, taskIsWaitingForConnectivity task: URLSessionTask) {
         eventMonitor?.urlSession(session, taskIsWaitingForConnectivity: task)
     }
-}
 
-extension SessionDelegate: URLSessionDataDelegate {
+    // MARK: - URLSessionDataDelegate
+
     open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         eventMonitor?.urlSession(session, dataTask: dataTask, didReceive: data)
 
@@ -206,9 +206,9 @@ extension SessionDelegate: URLSessionDataDelegate {
             completionHandler(proposedResponse)
         }
     }
-}
 
-extension SessionDelegate: URLSessionDownloadDelegate {
+    // MARK: - URLSessionDownloadDelegate
+
     open func urlSession(_ session: URLSession,
                          downloadTask: URLSessionDownloadTask,
                          didResumeAtOffset fileOffset: Int64,
